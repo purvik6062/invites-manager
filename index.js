@@ -109,7 +109,7 @@ async function assignRoleIfEnoughInvites(interaction) {
     // Assuming you have only one invite link for simplicity
     const userInvites = invites.find((invite) => invite.inviter && invite.inviter.id === interaction.user.id);
 
-    if (userInvites && userInvites.uses >= 3) {
+    if (userInvites && userInvites.uses >= 5) {
         // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
         const roleId = process.env.INVITE_AMB_ROLE_ID;
         const role = interaction.guild.roles.cache.get(roleId);
@@ -117,11 +117,12 @@ async function assignRoleIfEnoughInvites(interaction) {
         if (role) {
             member.roles.add(role);
             interaction.reply("Congratulations! You've been given the role.");
+            member.send("Congratulations! You've been given the role for inviting 5 or more members.");
         } else {
             interaction.reply('Error: Role not found.');
         }
     } else {
-        interaction.reply('You need at least 3 invites to get the role.');
+        interaction.reply('You need at least 5 invites to get the role.');
     }
 }
 
@@ -153,7 +154,7 @@ async function assignRoleIfEnoughInvitesOnJoin(member) {
 
         if (role) {
             member.roles.add(role);
-            member.send("Congratulations! You've been given the role for inviting 10 or more members.");
+            member.send("Congratulations! You've been given the role for inviting 5 or more members.");
         } else {
             console.error('Error: Role not found.');
         }
