@@ -1,0 +1,55 @@
+{
+  "invites": [
+    {
+      "guildId": "1179003249232183306",
+      "code": "9ZJMWGeb",
+      "temporary": false,
+      "maxAge": 604800,
+      "maxUses": 0,
+      "inviterId": "1057955737009147974",
+      "targetUser": null,
+      "targetApplication": null,
+      "targetType": null,
+      "channelId": "1179003249232183310",
+      "createdTimestamp": 1703307097298,
+      "stageInstance": null,
+      "guildScheduledEvent": null,
+      "url": "https://discord.gg/9ZJMWGeb",
+      "expiresTimestamp": 1703911897000
+    },
+    {
+      "guildId": "1179003249232183306",
+      "code": "Hte8QEs5",
+      "temporary": false,
+      "maxAge": 604800,
+      "maxUses": 0,
+      "inviterId": "1070695676977102928",
+      "targetUser": null,
+      "targetApplication": null,
+      "targetType": null,
+      "channelId": "1179003249232183310",
+      "createdTimestamp": 1703158001399,
+      "stageInstance": null,
+      "guildScheduledEvent": null,
+      "url": "https://discord.gg/Hte8QEs5",
+      "expiresTimestamp": 1703762801000
+    },
+    {
+      "guildId": "1179003249232183306",
+      "code": "v9g4pWCN",
+      "temporary": false,
+      "maxAge": 604800,
+      "maxUses": 0,
+      "inviterId": "1057955737009147974",
+      "targetUser": null,
+      "targetApplication": null,
+      "targetType": null,
+      "channelId": "1179003249232183310",
+      "createdTimestamp": 1703156995229,
+      "stageInstance": null,
+      "guildScheduledEvent": null,
+      "url": "https://discord.gg/v9g4pWCN",
+      "expiresTimestamp": 1703761795000
+    }
+  ]
+}

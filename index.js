@@ -60,14 +60,14 @@ client.on('interactionCreate', async (interaction) => {
     const { commandName } = interaction;
 
     if (commandName === 'count') {
-        // console.log("interaction.channelId", interaction.channelId);
-        // console.log("process.env.INVITE_AMB_ROLE_ID", process.env.INVITE_AMB_CHANNEL_ID);
+        console.log("interaction.channelId", interaction.channelId);
+        console.log("process.env.INVITE_AMB_ROLE_ID", process.env.INVITE_AMB_CHANNEL_ID);
 
         if (interaction.channelId === process.env.INVITE_AMB_CHANNEL_ID) {
             await getInviteCount(interaction);
         } else {
             const inviteAmbChannel = client.channels.cache.get(process.env.INVITE_AMB_CHANNEL_ID);
-            // console.log("inviteAmbChannel", inviteAmbChannel)
+            console.log("inviteAmbChannel", inviteAmbChannel)
             if (inviteAmbChannel) {
                 interaction.reply(`This command can only be used in the ${inviteAmbChannel.toString()} channel.`);
             } else {
@@ -89,27 +89,33 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 async function getInviteCount(interaction) {
-
-    // console.log(interaction)
     const member = interaction.guild.members.cache.get(interaction.user.id);
     const invites = await interaction.guild.invites.fetch();
 
-    // Assuming you have only one invite link for simplicity
-    const userInvites = invites.find((invite) => invite.inviter && invite.inviter.id === interaction.user.id);
+    let totalInviteCount = 0;
 
-    const inviteCount = userInvites ? userInvites.uses : 0;
+    invites.forEach((invite) => {
+        if (invite.inviter && invite.inviter.id === interaction.user.id) {
+            totalInviteCount += invite.uses;
+        }
+    });
 
-    interaction.reply(`You have ${inviteCount} invite(s).`);
+    interaction.reply(`You have a total of ${totalInviteCount} invite(s).`);
 }
 
 async function assignRoleIfEnoughInvites(interaction) {
     const member = interaction.guild.members.cache.get(interaction.user.id);
     const invites = await interaction.guild.invites.fetch();
 
-    // Assuming you have only one invite link for simplicity
-    const userInvites = invites.find((invite) => invite.inviter && invite.inviter.id === interaction.user.id);
+    let totalInviteCount = 0;
 
-    if (userInvites && userInvites.uses >= 5) {
+    invites.forEach((invite) => {
+        if (invite.inviter && invite.inviterID === interaction.user.id) {
+            totalInviteCount += invite.uses;
+        }
+    });
+
+    if (totalInviteCount >= 5) {
         // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
         const roleId = process.env.INVITE_AMB_ROLE_ID;
         const role = interaction.guild.roles.cache.get(roleId);
@@ -122,10 +128,9 @@ async function assignRoleIfEnoughInvites(interaction) {
             interaction.reply('Error: Role not found.');
         }
     } else {
-        interaction.reply('You need at least 5 invites to get the role.');
+        interaction.reply(`You need at least 5 invites (total: ${totalInviteCount}) to get the role.`);
     }
 }
-
 
 
 
