@@ -192,6 +192,39 @@ async function getInviteCount(interaction) {
     // interaction.reply(`You have a total of ${totalInviteCount} invite(s).`);
 }
 
+// async function assignRoleIfEnoughInvites(interaction) {
+//     const member = interaction.guild.members.cache.get(interaction.user.id);
+//     const invites = await interaction.guild.invites.fetch();
+
+//     let totalInviteCount = 0;
+
+//     invites.forEach((invite) => {
+//         if (invite.inviter && invite.inviter.id === interaction.user.id) {
+//             totalInviteCount += invite.uses;
+//         }
+//     });
+
+//     const userId = interaction.user.id;
+
+//     const { uniqueInviteCount, uniqueMemberIds } = await getUniqueInvitedMembers(userId);
+
+//     if (uniqueInviteCount >= 5) {
+//         // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
+//         const roleId = process.env.DYNAMO;
+//         const role = interaction.guild.roles.cache.get(roleId);
+
+//         if (role) {
+//             member.roles.add(role);
+//             interaction.reply("Congratulations! You've been given the role.");
+//             member.send("Congratulations! You've been given the role for inviting 5 or more members.");
+//         } else {
+//             interaction.reply('Error: Role not found.');
+//         }
+//     } else {
+//         interaction.reply(`You need at least 5 invites to get the role.`);
+//     }
+// }
+
 async function assignRoleIfEnoughInvites(interaction) {
     const member = interaction.guild.members.cache.get(interaction.user.id);
     const invites = await interaction.guild.invites.fetch();
@@ -208,61 +241,83 @@ async function assignRoleIfEnoughInvites(interaction) {
 
     const { uniqueInviteCount, uniqueMemberIds } = await getUniqueInvitedMembers(userId);
 
-    if (uniqueInviteCount >= 5) {
-        // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
-        const roleId = process.env.INVITE_AMB_ROLE_ID;
+    if (uniqueInviteCount >= 10) {
+        const roleId = process.env.MAESTRO;
         const role = interaction.guild.roles.cache.get(roleId);
 
         if (role) {
             member.roles.add(role);
-            interaction.reply("Congratulations! You've been given the role.");
-            member.send("Congratulations! You've been given the role for inviting 5 or more members.");
+            interaction.reply("Congratulations! You've been given the MAESTRO role for inviting 10 or more members.");
+            member.send("Congratulations! You've been given the MAESTRO role for inviting 10 or more members.");
+        } else {
+            interaction.reply('Error: Role not found.');
+        }
+    } else if (uniqueInviteCount >= 5) {
+        const roleId = process.env.DYNAMO;
+        const role = interaction.guild.roles.cache.get(roleId);
+
+        if (role) {
+            member.roles.add(role);
+            interaction.reply("Congratulations! You've been given the DYNAMO role for inviting 5 or more members.");
+            member.send("Congratulations! You've been given the DYNAMO role for inviting 5 or more members.");
+        } else {
+            interaction.reply('Error: Role not found.');
+        }
+    } else if (uniqueInviteCount >= 1) {
+        const roleId = process.env.TRAILBLAZER;
+        const role = interaction.guild.roles.cache.get(roleId);
+
+        if (role) {
+            member.roles.add(role);
+            interaction.reply("Congratulations! You've been given the TRAILBLAZER role for inviting at least 1 member.");
+            member.send("Congratulations! You've been given the TRAILBLAZER role for inviting at least 1 member.");
         } else {
             interaction.reply('Error: Role not found.');
         }
     } else {
-        interaction.reply(`You need at least 5 invites to get the role.`);
+        interaction.reply(`You need at least 1 invite to get the first role.`);
     }
 }
 
 
 
-async function checkInvitesForAllMembers() {
-    const guild = client.guilds.cache.get(process.env.GUILD_ID);
 
-    if (guild) {
-        await guild.members.fetch();
+// async function checkInvitesForAllMembers() {
+//     const guild = client.guilds.cache.get(process.env.GUILD_ID);
 
-        guild.members.cache.forEach(async (member) => {
-            await assignRoleIfEnoughInvitesOnJoin(member);
-        });
-    }
-}
+//     if (guild) {
+//         await guild.members.fetch();
 
-async function assignRoleIfEnoughInvitesOnJoin(member) {
-    const invites = await member.guild.invites.fetch();
+//         guild.members.cache.forEach(async (member) => {
+//             await assignRoleIfEnoughInvitesOnJoin(member);
+//         });
+//     }
+// }
 
-    let totalInviteCount = 0;
+// async function assignRoleIfEnoughInvitesOnJoin(member) {
+//     const invites = await member.guild.invites.fetch();
 
-    invites.forEach((invite) => {
-        if (invite.inviter && invite.inviter.id === interaction.user.id) {
-            totalInviteCount += invite.uses;
-        }
-    });
+//     let totalInviteCount = 0;
 
-    if (totalInviteCount >= 5) {
-        // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
-        const roleId = process.env.INVITE_AMB_ROLE_ID;
-        const role = member.guild.roles.cache.get(roleId);
+//     invites.forEach((invite) => {
+//         if (invite.inviter && invite.inviter.id === interaction.user.id) {
+//             totalInviteCount += invite.uses;
+//         }
+//     });
 
-        if (role) {
-            member.roles.add(role);
-            member.send("Congratulations! You've been given the role for inviting 5 or more members.");
-        } else {
-            console.error('Error: Role not found.');
-        }
-    }
-}
+//     if (totalInviteCount >= 5) {
+//         // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
+//         const roleId = process.env.DYNAMO;
+//         const role = member.guild.roles.cache.get(roleId);
+
+//         if (role) {
+//             member.roles.add(role);
+//             member.send("Congratulations! You've been given the role for inviting 5 or more members.");
+//         } else {
+//             console.error('Error: Role not found.');
+//         }
+//     }
+// }
 
 
 client.on('guildMemberAdd', async (member) => {
