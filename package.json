@@ -10,6 +10,7 @@
     "fs": "^0.0.1-security",
     "node-fetch": "^3.2.6",
     "passport": "^0.7.0",
-    "passport-discord": "^0.1.4"
+    "passport-discord": "^0.1.4",
+    "sqlite3": "^5.1.6"
   }
 }
