@@ -22,6 +22,16 @@ const DiscordStrategy = require("passport-discord").Strategy;
 
 const sqlite3 = require('sqlite3');
 
+// const InvitesTracker = require('@androz2091/discord-invites-tracker');
+// const tracker = InvitesTracker.init(client, {
+//     fetchGuilds: true,
+//     fetchVanity: true,
+//     fetchAuditLogs: true
+// });
+
+var { inviteTracker } = require("discord-inviter"),
+    tracker = new inviteTracker(client);
+
 const db = new sqlite3.Database('discordBotData.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, async (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
@@ -54,6 +64,7 @@ CREATE TABLE IF NOT EXISTS userData (
 
 client.once('ready', () => {
     console.log('Bot is ready!');
+    console.log(`Logged in as ${client.user.tag}`);
     // checkInvitesForAllMembers();
 });
 
@@ -92,15 +103,20 @@ client.on('interactionCreate', async (interaction) => {
 
     const { commandName } = interaction;
 
+
+
     if (commandName === 'count') {
         console.log("interaction.channelId", interaction.channelId);
         console.log("process.env.INVITE_AMB_CHANNEL_ID", process.env.INVITE_AMB_CHANNEL_ID);
+
+        // const ranks = await client.cache.ranks.get(process.env.GUILD_ID);
+        // console.log(ranks)
 
         if (interaction.channelId === process.env.INVITE_AMB_CHANNEL_ID) {
             await getInviteCount(interaction);
         } else {
             const inviteAmbChannel = client.channels.cache.get(process.env.INVITE_AMB_CHANNEL_ID);
-            console.log("inviteAmbChannel", inviteAmbChannel)
+            // console.log("inviteAmbChannel", inviteAmbChannel)
             if (inviteAmbChannel) {
                 interaction.reply(`This command can only be used in the ${inviteAmbChannel.toString()} channel.`);
             } else {
@@ -192,38 +208,6 @@ async function getInviteCount(interaction) {
     // interaction.reply(`You have a total of ${totalInviteCount} invite(s).`);
 }
 
-// async function assignRoleIfEnoughInvites(interaction) {
-//     const member = interaction.guild.members.cache.get(interaction.user.id);
-//     const invites = await interaction.guild.invites.fetch();
-
-//     let totalInviteCount = 0;
-
-//     invites.forEach((invite) => {
-//         if (invite.inviter && invite.inviter.id === interaction.user.id) {
-//             totalInviteCount += invite.uses;
-//         }
-//     });
-
-//     const userId = interaction.user.id;
-
-//     const { uniqueInviteCount, uniqueMemberIds } = await getUniqueInvitedMembers(userId);
-
-//     if (uniqueInviteCount >= 5) {
-//         // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
-//         const roleId = process.env.DYNAMO;
-//         const role = interaction.guild.roles.cache.get(roleId);
-
-//         if (role) {
-//             member.roles.add(role);
-//             interaction.reply("Congratulations! You've been given the role.");
-//             member.send("Congratulations! You've been given the role for inviting 5 or more members.");
-//         } else {
-//             interaction.reply('Error: Role not found.');
-//         }
-//     } else {
-//         interaction.reply(`You need at least 5 invites to get the role.`);
-//     }
-// }
 
 async function assignRoleIfEnoughInvites(interaction) {
     const member = interaction.guild.members.cache.get(interaction.user.id);
@@ -275,82 +259,97 @@ async function assignRoleIfEnoughInvites(interaction) {
             interaction.reply('Error: Role not found.');
         }
     } else {
-        interaction.reply(`You need at least 1 invite to get the first role.`);
+        interaction.reply(`You need at least 1 invite to get the first TRAILBLAZER role.`);
     }
 }
 
 
+// tracker.on('guildMemberAdd', (member, type, invite) => {
 
+//     const welcomeChannel = member.guild.channels.cache.find((ch) => ch.name === 'general');
 
-// async function checkInvitesForAllMembers() {
-//     const guild = client.guilds.cache.get(process.env.GUILD_ID);
-
-//     if (guild) {
-//         await guild.members.fetch();
-
-//         guild.members.cache.forEach(async (member) => {
-//             await assignRoleIfEnoughInvitesOnJoin(member);
-//         });
+//     if (type === 'normal') {
+//         welcomeChannel.send(`Welcome ${member}! You were invited by ${invite.inviter.username}!`);
 //     }
-// }
 
-// async function assignRoleIfEnoughInvitesOnJoin(member) {
-//     const invites = await member.guild.invites.fetch();
-
-//     let totalInviteCount = 0;
-
-//     invites.forEach((invite) => {
-//         if (invite.inviter && invite.inviter.id === interaction.user.id) {
-//             totalInviteCount += invite.uses;
-//         }
-//     });
-
-//     if (totalInviteCount >= 5) {
-//         // Replace 'ROLE_ID_HERE' with the actual ID of the role you want to assign
-//         const roleId = process.env.DYNAMO;
-//         const role = member.guild.roles.cache.get(roleId);
-
-//         if (role) {
-//             member.roles.add(role);
-//             member.send("Congratulations! You've been given the role for inviting 5 or more members.");
-//         } else {
-//             console.error('Error: Role not found.');
-//         }
+//     else if (type === 'vanity') {
+//         welcomeChannel.send(`Welcome ${member}! You joined using a custom invite!`);
 //     }
-// }
 
+//     else if (type === 'permissions') {
+//         welcomeChannel.send(`Welcome ${member}! I can't figure out how you joined because I don't have the "Manage Server" permission!`);
+//     }
 
-client.on('guildMemberAdd', async (member) => {
+//     else if (type === 'unknown') {
+//         welcomeChannel.send(`Welcome ${member}! I can't figure out how you joined the server...`);
+//     }
 
-    const guild = member.guild;
-    const auditLogs = await guild.fetchAuditLogs({ type: 28 }); // Use the integer value for GUILD_MEMBER_ADD
+// });
 
-    const memberAddEntry = auditLogs.entries.first();
+tracker.on("guildMemberAdd", async (member, inviter, invite, error) => {
+    // return when get error
+    if (error) return console.error(error);
 
-    if (memberAddEntry) {
-        const { executor, target } = memberAddEntry;
+    // Log member user ID and inviter user ID and timestamp
+    console.log(`Member User ID: ${member.user.id}, Inviter User ID: ${inviter.id}, member.joinTimestamp: ${member.joinTimestamp}`);
 
-        const logChannel = guild.channels.cache.get(process.env.INVITE_AMB_CHANNEL_ID);
-
-        if (logChannel) {
-
-            const dataInsertSql = `INSERT INTO userData VALUES (?, ?, ?)`;
-
-            db.run(dataInsertSql, [
-                member.user.id,
-                executor.id,
-                member.joinedAt,
-            ]);
-
-            const joinedAt = member.joinedAt;
-            const localTime = joinedAt.toLocaleString();
-            logChannel.send(`Member: ${member.user.tag} has joined. Invited by: ${executor.tag}.`);
-            // logChannel.send(`Member: ${member.user.tag} (${member.displayName}) (${member.user.id}) has joined. Invited by: ${executor.tag} (${executor.id}). Joined at: ${localTime}`);
+    // Insert data into the userData table
+    const joinTimestamp = member.joinedTimestamp.toString(); // Convert timestamp to string if needed
+    db.run(`
+        INSERT INTO userData VALUES (?, ?, ?)
+    `, [member.user.id, inviter.id, member.joinTimestamp], (err) => {
+        if (err) {
+            console.error('Error inserting data into userData table:', err.message);
         } else {
-            console.error('Error: Log channel not found.');
+            console.log('Data inserted into userData table');
         }
-    }
+    });
+
+    // get the channel
+    let channel = member.guild.channels.cache.get(process.env.INVITE_AMB_CHANNEL_ID),
+        Msg = `Welcome ${member.user}, invited by <@!${inviter.id}>`;
+
+    // change welcome message when the member is bot
+    if (member.user.bot)
+        Msg = `Welcome ${member.user}, invited by <@!${inviter.id}>`;
+
+    // send welcome message
+    channel.send(Msg);
 });
+
+
+// "error" event to get any error
+tracker.on("error", (guild, err) => {
+    console.error(guild?.name, err);
+});
+
+// client.on("messageCreate", async (message) => {
+//     // get member invites count
+//     if (message.content == "invites") {
+//         var invite = await inviteTracker.getMemberInvites(message.member);
+//         message.channel.send(
+//             `${message.author.tag} has ${invite.count} invite(s).`
+//         );
+//         // get server top invites
+//     } else if (message.content == "top-invites") {
+//         var top = await inviteTracker.getTopInvites(message.guild);
+//         message.channel.send(
+//             top
+//                 .map((i, n) => `\`#${n + 1}\`- **${i.user.tag}** has __${i.count}__`)
+//                 .join("\n")
+//         );
+//         // get info of any invite code
+//     } else if (message.content == "invite-info") {
+//         var invite = await inviteTracker.getInfo(client, "https://discord.gg/maxSPHjvaw");
+//         if (!invite) return;
+
+//         message.channel.send(
+//             `Guild: ${invite.guild.name},\nInviter: ${invite?.inviter ? `${invite.inviter.tag}` : "Owner"
+//             },\nLink: ${invite.url}`
+//         );
+//     }
+// });
+
 
 
 async function initialize() {
